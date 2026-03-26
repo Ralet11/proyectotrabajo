@@ -1,0 +1,64 @@
+Stack final recomendado por mí
+Mobile
+
+React Native
+
+Expo
+
+Expo Router
+
+TanStack Query
+
+Zustand
+
+React Hook Form
+
+Zod
+
+Axios
+
+Secure Store / MMKV
+
+Web admin
+
+React
+
+Vite
+
+React Router
+
+MUI
+
+TanStack Query
+
+Zustand
+
+React Hook Form
+
+Zod
+
+Axios
+
+Backend
+
+Node.js
+
+NestJS
+
+Prisma
+
+PostgreSQL
+
+Redis
+
+JWT
+
+Argon2
+
+Swagger
+
+BullMQ
+
+Pino
+
+Infra / servicios

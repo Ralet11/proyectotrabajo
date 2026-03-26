@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  PROFESSIONAL
+  ADMIN
+}
+
+enum AuthProvider {
+  PASSWORD
+  GOOGLE
+  APPLE
+}
+
+enum ProfessionalStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  PAUSED
+}
+
+enum PreferredContactChannel {
+  WHATSAPP
+  PHONE
+  IN_APP
+}
+
+enum ServiceRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
+enum ReviewStatus {
+  VISIBLE
+  HIDDEN
+}
+
+enum NotificationType {
+  SERVICE_REQUEST_CREATED
+  SERVICE_REQUEST_ACCEPTED
+  SERVICE_REQUEST_REJECTED
+  SERVICE_REQUEST_MESSAGE
+  REVIEW_REMINDER
+  PROFESSIONAL_APPROVED
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+model User {
+  id                String             @id @default(uuid()) @db.Uuid
+  email             String             @unique
+  firstName         String
+  lastName          String
+  phone             String?
+  avatarUrl         String?
+  roles             UserRole[]
+  emailVerifiedAt   DateTime?
+  sessionVersion    Int                @default(0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  authIdentities    AuthIdentity[]
+  sessions          Session[]
+  professionalProfile ProfessionalProfile?
+  customerRequests  ServiceRequest[]   @relation("CustomerRequests")
+  messages          ServiceRequestMessage[]
+  reviews           Review[]           @relation("CustomerReviews")
+  notifications     Notification[]
+  devicePushTokens  DevicePushToken[]
+  adminActionLogs   AdminActionLog[]
+}
+
+model AuthIdentity {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @db.Uuid
+  provider       AuthProvider
+  providerUserId String?
+  passwordHash   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+}
+
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  refreshTokenHash String
+  deviceName       String?
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  createdAt        DateTime  @default(now())
+  revokedAt        DateTime?
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  slug                   String                  @unique
+  name                   String                  @unique
+  description            String?
+  icon                   String?
+  isActive               Boolean                 @default(true)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  professionalCategories ProfessionalCategory[]
+  serviceRequests        ServiceRequest[]
+}
+
+model ProfessionalProfile {
+  id                      String                  @id @default(uuid()) @db.Uuid
+  userId                  String                  @unique @db.Uuid
+  status                  ProfessionalStatus      @default(DRAFT)
+  businessName            String
+  description             String
+  yearsOfExperience       Int?
+  phone                   String?
+  whatsappNumber          String?
+  profileImageUrl         String?
+  galleryImageUrls        String[]
+  averageRating           Float                   @default(0)
+  reviewCount             Int                     @default(0)
+  isAcceptingRequests     Boolean                 @default(true)
+  availableToday          Boolean                 @default(false)
+  availabilitySummary     String?
+  preferredContactChannel PreferredContactChannel @default(WHATSAPP)
+  approvedAt              DateTime?
+  rejectedAt              DateTime?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  user                    User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceAreas            ServiceArea[]
+  professionalCategories  ProfessionalCategory[]
+  serviceRequests         ServiceRequest[]
+  reviews                 Review[]                @relation("ProfessionalReviews")
+}
+
+model ProfessionalCategory {
+  professionalProfileId String              @db.Uuid
+  categoryId            String              @db.Uuid
+  professionalProfile   ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  category              Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([professionalProfileId, categoryId])
+}
+
+model ServiceArea {
+  id                    String              @id @default(uuid()) @db.Uuid
+  professionalProfileId String              @db.Uuid
+  placeId               String
+  label                 String
+  lat                   Float
+  lng                   Float
+  radiusKm              Int
+  createdAt             DateTime            @default(now())
+  professionalProfile   ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+}
+
+model ServiceRequest {
+  id                      String                  @id @default(uuid()) @db.Uuid
+  customerId              String                  @db.Uuid
+  professionalId          String                  @db.Uuid
+  categoryId              String                  @db.Uuid
+  status                  ServiceRequestStatus    @default(PENDING)
+  message                 String
+  placeId                 String?
+  addressText             String?
+  lat                     Float?
+  lng                     Float?
+  preferredContactChannel PreferredContactChannel @default(WHATSAPP)
+  contactUnlockedAt       DateTime?
+  acceptedAt              DateTime?
+  rejectedAt              DateTime?
+  cancelledAt             DateTime?
+  completedAt             DateTime?
+  expiresAt               DateTime?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  customer                User                    @relation("CustomerRequests", fields: [customerId], references: [id], onDelete: Cascade)
+  professional            ProfessionalProfile     @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  category                Category                @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  messages                ServiceRequestMessage[]
+  review                  Review?
+
+  @@index([customerId, status])
+  @@index([professionalId, status])
+}
+
+model ServiceRequestMessage {
+  id               String         @id @default(uuid()) @db.Uuid
+  serviceRequestId String         @db.Uuid
+  senderUserId     String         @db.Uuid
+  body             String
+  createdAt        DateTime       @default(now())
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  senderUser       User           @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId, createdAt])
+}
+
+model Review {
+  id               String       @id @default(uuid()) @db.Uuid
+  serviceRequestId String       @unique @db.Uuid
+  customerId       String       @db.Uuid
+  professionalId   String       @db.Uuid
+  rating           Int
+  comment          String?
+  status           ReviewStatus @default(VISIBLE)
+  createdAt        DateTime     @default(now())
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  customer         User           @relation("CustomerReviews", fields: [customerId], references: [id], onDelete: Cascade)
+  professional     ProfessionalProfile @relation("ProfessionalReviews", fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([professionalId, status, createdAt])
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}
+
+model DevicePushToken {
+  id         String         @id @default(uuid()) @db.Uuid
+  userId     String         @db.Uuid
+  token      String         @unique
+  platform   DevicePlatform
+  createdAt  DateTime       @default(now())
+  lastSeenAt DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdminActionLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  adminUserId String   @db.Uuid
+  action      String
+  entityType  String
+  entityId    String
+  payload     Json?
+  createdAt   DateTime @default(now())
+  adminUser   User     @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId, createdAt])
+}
+

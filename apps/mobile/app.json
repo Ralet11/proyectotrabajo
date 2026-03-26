@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Oficios",
+    "slug": "oficios",
+    "scheme": "oficios",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
+

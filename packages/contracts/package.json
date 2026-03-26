@@ -1,0 +1,25 @@
+{
+  "name": "@oficios/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "node -e \"console.log('No tests in @oficios/contracts')\""
+  },
+  "dependencies": {
+    "@oficios/domain": "workspace:*",
+    "zod": "^3.24.2"
+  }
+}
