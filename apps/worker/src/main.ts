@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { QueueEvents, Worker } from 'bullmq';
 import { parseEnv, workerEnvSchema } from '@oficios/config';
 

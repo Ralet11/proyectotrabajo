@@ -2,13 +2,15 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
+import { API_ENV } from '../../common/env.module';
+
 const uploadSignatureSchema = z.object({
   folder: z.string().trim().min(1).max(120).default('professionals'),
 });
 
 @Injectable()
 export class UploadsService {
-  constructor(@Inject('API_ENV') private readonly env: Record<string, string>) {}
+  constructor(@Inject(API_ENV) private readonly env: Record<string, string>) {}
 
   createSignedUpload(payload: unknown) {
     const input = uploadSignatureSchema.parse(payload ?? {});

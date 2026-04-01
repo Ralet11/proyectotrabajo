@@ -4,7 +4,9 @@ import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
+import { Pill, SectionHeading, SurfaceCard } from '@/components/ui';
 import { listCategories, listProfessionals } from '@/lib/api';
+import { AppTheme, useAppTheme } from '@/theme';
 
 type CategoryItem = {
   id: string;
@@ -20,6 +22,8 @@ type ProfessionalItem = {
 };
 
 export default function HomeScreen() {
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
   const [text, setText] = useState('');
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
 
@@ -41,15 +45,22 @@ export default function HomeScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Buscar profesionales</Text>
-      <Text style={styles.subtitle}>Cerrajeros, electricistas, plomeros y más.</Text>
-
-      <TextInput
-        placeholder="Buscar por nombre, categoría o descripción"
-        style={styles.input}
-        value={text}
-        onChangeText={setText}
+      <SectionHeading
+        eyebrow="Descubrir"
+        title="Buscar profesionales"
+        subtitle="Cerrajeros, electricistas, plomeros y mas con una base visual facil de replicar."
       />
+
+      <SurfaceCard style={styles.searchCard}>
+        <Text style={styles.searchLabel}>Busqueda</Text>
+        <TextInput
+          placeholder="Buscar por nombre, categoria o descripcion"
+          placeholderTextColor={theme.colors.textMuted}
+          style={styles.input}
+          value={text}
+          onChangeText={setText}
+        />
+      </SurfaceCard>
 
       <FlatList
         data={categories}
@@ -59,28 +70,23 @@ export default function HomeScreen() {
         contentContainerStyle={styles.categories}
         renderItem={({ item }) => {
           const selected = categoryId === item.id;
-          return (
-            <Pressable
-              onPress={() => setCategoryId(selected ? undefined : item.id)}
-              style={[styles.categoryPill, selected && styles.categoryPillSelected]}
-            >
-              <Text style={[styles.categoryPillLabel, selected && styles.categoryPillLabelSelected]}>{item.name}</Text>
-            </Pressable>
-          );
+          return <Pill label={item.name} selected={selected} onPress={() => setCategoryId(selected ? undefined : item.id)} />;
         }}
       />
 
       <View style={styles.list}>
         {professionals.map((professional) => (
           <Link key={professional.id} href={`/professionals/${professional.id}`} asChild>
-            <Pressable style={styles.card}>
-              <Text style={styles.cardTitle}>{professional.businessName}</Text>
-              <Text style={styles.cardMeta}>
-                {professional.averageRating.toFixed(1)} · {professional.reviewCount} reseñas
-              </Text>
-              <Text style={styles.cardDescription} numberOfLines={3}>
-                {professional.description}
-              </Text>
+            <Pressable>
+              <SurfaceCard style={styles.card}>
+                <Text style={styles.cardTitle}>{professional.businessName}</Text>
+                <Text style={styles.cardMeta}>
+                  {professional.averageRating.toFixed(1)} · {professional.reviewCount} resenas
+                </Text>
+                <Text style={styles.cardDescription} numberOfLines={3}>
+                  {professional.description}
+                </Text>
+              </SurfaceCard>
             </Pressable>
           </Link>
         ))}
@@ -89,65 +95,49 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  subtitle: {
-    color: '#4b5563',
-    marginBottom: 16,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#d6d3d1',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
-  },
-  categories: {
-    gap: 10,
-    paddingVertical: 18,
-  },
-  categoryPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 999,
-    backgroundColor: '#e7e5e4',
-  },
-  categoryPillSelected: {
-    backgroundColor: '#0f766e',
-  },
-  categoryPillLabel: {
-    color: '#292524',
-    fontWeight: '600',
-  },
-  categoryPillLabelSelected: {
-    color: '#ffffff',
-  },
-  list: {
-    gap: 12,
-    paddingBottom: 24,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 18,
-    gap: 8,
-  },
-  cardTitle: {
-    fontWeight: '800',
-    fontSize: 18,
-    color: '#111827',
-  },
-  cardMeta: {
-    color: '#0f766e',
-    fontWeight: '600',
-  },
-  cardDescription: {
-    color: '#4b5563',
-    lineHeight: 22,
-  },
-});
+function createStyles(theme: AppTheme) {
+  return StyleSheet.create({
+    searchCard: {
+      gap: theme.spacing.sm,
+    },
+    searchLabel: {
+      color: theme.colors.primaryStrong,
+      fontWeight: '800',
+      fontSize: theme.typography.caption,
+      letterSpacing: 1,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.surfaceMuted,
+      color: theme.colors.text,
+    },
+    categories: {
+      gap: 10,
+      paddingVertical: 18,
+    },
+    list: {
+      gap: 12,
+      paddingBottom: 24,
+    },
+    card: {
+      gap: 8,
+    },
+    cardTitle: {
+      fontWeight: '800',
+      fontSize: 18,
+      color: theme.colors.text,
+    },
+    cardMeta: {
+      color: theme.colors.primaryStrong,
+      fontWeight: '600',
+    },
+    cardDescription: {
+      color: theme.colors.textMuted,
+      lineHeight: 22,
+    },
+  });
+}

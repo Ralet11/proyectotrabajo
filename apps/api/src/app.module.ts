@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { parseEnv, apiEnvSchema } from '@oficios/config';
 
+import { EnvModule } from './common/env.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -15,10 +15,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { AdminModule } from './modules/admin/admin.module';
 
-const env = parseEnv(apiEnvSchema, process.env);
-
 @Module({
   imports: [
+    EnvModule,
     PrismaModule,
     JwtModule.register({}),
     ThrottlerModule.forRoot([
@@ -38,10 +37,6 @@ const env = parseEnv(apiEnvSchema, process.env);
     AdminModule,
   ],
   providers: [
-    {
-      provide: 'API_ENV',
-      useValue: env,
-    },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

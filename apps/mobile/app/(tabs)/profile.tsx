@@ -1,63 +1,47 @@
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/Screen';
+import { AppButton, SectionHeading, SurfaceCard } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/auth.store';
+import { AppTheme, useAppTheme } from '@/theme';
 
 export default function ProfileScreen() {
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
   const userEmail = useAuthStore((state) => state.userEmail);
   const logout = useAuthStore((state) => state.logout);
 
   return (
     <Screen>
-      <Text style={styles.title}>Perfil</Text>
-      <Text style={styles.subtitle}>{userEmail}</Text>
+      <SectionHeading eyebrow="Cuenta" title="Perfil" subtitle={userEmail} />
 
-      <Link href="/profile/professional" asChild>
-        <Pressable style={styles.primaryButton}>
-          <Text style={styles.primaryButtonLabel}>Configurar perfil profesional</Text>
-        </Pressable>
-      </Link>
+      <SurfaceCard>
+        <Text style={styles.cardTitle}>Configuracion</Text>
+        <Text style={styles.cardBody}>
+          Define tu presentacion profesional, datos de contacto y disponibilidad usando los mismos tokens de diseno.
+        </Text>
 
-      <Pressable style={styles.secondaryButton} onPress={logout}>
-        <Text style={styles.secondaryButtonLabel}>Cerrar sesión</Text>
-      </Pressable>
+        <Link href="/profile/professional" asChild>
+          <AppButton label="Configurar perfil profesional" />
+        </Link>
+
+        <AppButton label="Cerrar sesion" variant="secondary" onPress={logout} />
+      </SurfaceCard>
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  subtitle: {
-    marginTop: 8,
-    marginBottom: 24,
-    color: '#4b5563',
-  },
-  primaryButton: {
-    backgroundColor: '#0f766e',
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  primaryButtonLabel: {
-    color: '#ffffff',
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    marginTop: 14,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#d6d3d1',
-  },
-  secondaryButtonLabel: {
-    color: '#292524',
-    fontWeight: '700',
-  },
-});
-
+function createStyles(theme: AppTheme) {
+  return StyleSheet.create({
+    cardTitle: {
+      color: theme.colors.text,
+      fontWeight: '800',
+      fontSize: theme.typography.heading,
+    },
+    cardBody: {
+      color: theme.colors.textMuted,
+      lineHeight: 22,
+    },
+  });
+}

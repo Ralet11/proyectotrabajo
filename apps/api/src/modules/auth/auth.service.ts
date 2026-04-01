@@ -19,6 +19,7 @@ import {
   verifyEmailSchema,
 } from '@oficios/contracts';
 
+import { API_ENV } from '../../common/env.module';
 import { PrismaService } from '../../common/prisma/prisma.service';
 
 type SafeUser = {
@@ -36,7 +37,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    @Inject('API_ENV') private readonly env: Record<string, string>,
+    @Inject(API_ENV) private readonly env: Record<string, string>,
   ) {}
 
   async register(payload: unknown) {

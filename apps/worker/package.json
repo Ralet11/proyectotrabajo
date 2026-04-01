@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "build:deps": "pnpm --filter @oficios/config build",
+    "dev": "pnpm run build:deps && tsx watch src/main.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/main.js",
+    "start": "pnpm run build:deps && tsx src/main.ts",
+    "start:prod": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "node -e \"console.log('Worker tests pending')\""
